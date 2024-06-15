@@ -24,35 +24,15 @@ const showPeople = () => {
 const addToCollection = (person) => {
   charactersInCollectContainer.insertAdjacentHTML(
     "beforeend",
-    `<div class='col' id= '${counter}'>
-    <div class><img src=${person.image} alt=${person.fullName}><div/>
-    <p class='content'> 
-  ${person.nickname}  <br>
-   ${person.hogwartsHouse} <br>
+    `<div id= '${person.index + 1}'class ='col'>
+   <img src=${person.image} alt=${person.fullName}>
+    <p> 
+   <span> ${person.nickname}</span> <br>
+   ${person.hogwartsHouse}<br>
     ${person.birthdate}     
     </p>
-    <div/>`
+    </div>`
   );
-  charactersInCollectFavorites.insertAdjacentHTML(
-    "beforeend",
-    `<div class='fav 'id= '${counter}'>
-    <div class><img src=${person.image} alt=${person.fullName}><div/>
-    <p class='content'> 
-  ${person.nickname}  <br>
-   ${person.hogwartsHouse} <br>
-    ${person.birthdate}     
-    </p>
-    <div/>`
-  );
-  counter++;
-  const favoritePeople = document.querySelectorAll(".fav");
-  favoritePeople.forEach((person) => {
-    person.style.display = "none";
-  });
-  const colPeople = document.querySelectorAll(".col");
-  colPeople.forEach((person) => {
-    person.style.display = "block";
-  });
 };
 
 const buildEachPerson = () => {
@@ -65,16 +45,11 @@ const getTheTotalStatsInCollections = () => {
   const totalInCollections = document.querySelectorAll(".col");
   const collection = document.querySelectorAll(".collect");
 
-  console.log(totalInCollections);
   const text = [];
 
   totalInCollections.forEach((person) => {
-    if (person.style.display === "block") {
-      console.log(person);
-      text.push(person.textContent);
-    }
+    text.push(person.textContent);
   });
-  console.log(text);
 
   const Gryffindor = text.filter((names) => {
     return names.includes("Gryffindor");
@@ -103,6 +78,7 @@ const getTheTotalStatsInCollections = () => {
     i++;
   });
 };
+
 const getTheTotalStatsInFavorites = () => {
   const totalInFavorites = document.querySelectorAll(".fav");
   const favor = document.querySelectorAll(".favor");
@@ -110,10 +86,7 @@ const getTheTotalStatsInFavorites = () => {
   const text = [];
 
   totalInFavorites.forEach((person) => {
-    if (person.style.display === "block") {
-      console.log(person);
-      text.push(person.textContent);
-    }
+    text.push(person.textContent);
   });
 
   const Gryffindor = text.filter((names) => {
@@ -144,88 +117,63 @@ const getTheTotalStatsInFavorites = () => {
   });
 };
 
-const clickOnPicturesInCollections = () => {
-  return charactersInCollectContainer.addEventListener("click", (e) => {
-    e.target.parentElement.parentElement.style.display = "none";
-    const fav = document.querySelectorAll(".fav");
-    fav.forEach((person) => {
-      if (person.id === e.target.parentElement.parentElement.id) {
-        person.style.display = "block";
+const clickOnPictures = () => {
+  const pictures = document.querySelectorAll("img");
+  const main = document.querySelector(".characters-in-collect-container");
+  const favorite = document.querySelector(".characters-in-favorite-container");
+  pictures.forEach((picture) => {
+    picture.addEventListener("click", (e) => {
+      const moveTo = ![...e.target.parentElement.classList].includes("col")
+        ? main
+        : favorite;
+
+      if ([...e.target.parentElement.classList].includes("fav")) {
+        e.target.parentElement.classList.remove("fav");
+        e.target.parentElement.classList.add("col");
+        moveTo.append(e.target.parentElement);
+        return;
       }
+      e.target.parentElement.classList.remove("col");
+      e.target.parentElement.classList.add("fav");
+      moveTo.append(e.target.parentElement);
+
+      getTheTotalStatsInFavorites();
+      getTheTotalStatsInCollections();
     });
-    getTheTotalStatsInCollections();
-    getTheTotalStatsInFavorites();
   });
 };
 
-const clickOnPicturesInFavorites = () => {
-  return charactersInCollectFavorites.addEventListener("click", (e) => {
-    e.target.parentElement.parentElement.style.display = "none";
-    const col = document.querySelectorAll(".col");
-    col.forEach((person) => {
-      if (person.id === e.target.parentElement.parentElement.id) {
-        person.style.display = "block";
-      }
-    });
-    getTheTotalStatsInFavorites();
-    getTheTotalStatsInCollections();
-  });
+const sortContainerChildren = (container, dir) => {
+  [...container.children]
+    .sort((a, b) => {
+      nameA = a.querySelector("p span").textContent;
+      nameB = b.querySelector("p span").textContent;
+      console.log(nameA, nameB);
+      console.log(nameA > nameB);
+
+      if (nameA > nameB) return dir === "asc" ? 1 : -1;
+      else if (nameB > nameA) return dir === "asc" ? -1 : 1;
+      else return 0;
+    })
+    .forEach((item) => container.append(item));
 };
 
 const clickOnButtonSort = () => {
   const buttonContainer = document.querySelector(
     ".switch-order-container-collect"
   );
-
   return buttonContainer.addEventListener("click", (e) => {
-    if (e.target.classList.contains("A-Z") && buttonTrack === 1) {
-      const collectionContainer = document.querySelector(
-        ".characters-in-collect-container"
-      );
-      const collectionOfPeople = document.querySelectorAll(".col");
+    const mainContainer = document.querySelector(
+      ".characters-in-collect-container"
+    );
+    const favContainer = document.querySelector(
+      ".characters-in-favorite-container"
+    );
+    const direction = e.target.dataset.order;
 
-      const reverseCol = Array.from(collectionOfPeople).reverse();
-
-      reverseCol.forEach((person) => {
-        collectionContainer.append(person);
-      });
-
-      const favoriteContainer = document.querySelector(
-        ".characters-in-favorite-container"
-      );
-      const favoritePeople = document.querySelectorAll(".fav");
-      const reverseFav = Array.from(favoritePeople).reverse();
-      reverseFav.forEach((person) => {
-        favoriteContainer.append(person);
-      });
-
-      buttonTrack++;
-    } else if (e.target.classList.contains("Z-A") && buttonTrack === 0) {
-      const collectionContainer = document.querySelector(
-        ".characters-in-collect-container"
-      );
-      const collectionOfPeople = document.querySelectorAll(".col");
-
-      const reverseCol = Array.from(collectionOfPeople).reverse();
-
-      reverseCol.forEach((person) => {
-        collectionContainer.append(person);
-      });
-
-      const favoriteContainer = document.querySelector(
-        ".characters-in-favorite-container"
-      );
-      const favoritePeople = document.querySelectorAll(".fav");
-      const reverseFav = Array.from(favoritePeople).reverse();
-      reverseFav.forEach((person) => {
-        favoriteContainer.append(person);
-      });
-      buttonTrack++;
-    }
-
-    if (buttonTrack === 2) {
-      buttonTrack = 0;
-    }
+    [mainContainer, favContainer].forEach((item) => {
+      sortContainerChildren(item, direction);
+    });
   });
 };
 
@@ -241,10 +189,8 @@ const fetchData = async () => {
   buildEachPerson();
   getTheTotalStatsInCollections();
   getTheTotalStatsInFavorites();
-  clickOnPicturesInCollections();
-  clickOnPicturesInFavorites();
+  clickOnPictures();
   clickOnButtonSort();
   return API;
 };
-
 fetchData();

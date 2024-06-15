@@ -87,6 +87,6 @@ img {
 
 @media(min-width:1200px) {
   body {
-    max-width: 1140px;
+    max-width: 100%;
   }
 }
